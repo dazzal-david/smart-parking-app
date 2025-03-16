@@ -98,14 +98,6 @@ class _PlacesScreenState extends State<PlacesScreen> {
     });
   }
 
-  void _showQrScannerComingSoon() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('QR Scanner for quick parking selection coming soon!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
 
   void _toggleMapExpanded() {
     setState(() {
@@ -140,11 +132,6 @@ class _PlacesScreenState extends State<PlacesScreen> {
       appBar: AppBar(
         title: const Text('Select Parking Place'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_scanner),
-            tooltip: 'Scan QR Code',
-            onPressed: _showQrScannerComingSoon,
-          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh',
@@ -331,37 +318,6 @@ class _PlacesScreenState extends State<PlacesScreen> {
                       fillColor: colorScheme.surfaceVariant.withOpacity(0.3),
                     ),
                     onChanged: _filterPlaces,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Expanded(child: Divider()),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'OR',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                      const Expanded(child: Divider()),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: _showQrScannerComingSoon,
-                    icon: const Icon(Icons.qr_code_scanner),
-                    label: const Text('Scan Parking QR Code'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
                   ),
                 ],
               ),

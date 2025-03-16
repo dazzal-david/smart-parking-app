@@ -4,6 +4,7 @@ import 'package:smart_parking_app/screens/bookings_screen.dart';
 import 'package:smart_parking_app/services/supabase_service.dart';
 import 'package:smart_parking_app/screens/login_screen.dart';
 import 'package:smart_parking_app/screens/manage_vehicles_screen.dart';
+import 'package:smart_parking_app/screens/booking_history_screen.dart';
 
 
 class HomeScreen extends StatefulWidget {

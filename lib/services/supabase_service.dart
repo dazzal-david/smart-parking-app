@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smart_parking_app/models/parking_place.dart';
 import 'package:smart_parking_app/models/parking_slot.dart';
 import 'package:smart_parking_app/models/booking.dart';
+import 'package:smart_parking_app/models/booking_history.dart';
 
 class SupabaseService {
   final SupabaseClient _supabaseClient = Supabase.instance.client;
@@ -77,14 +78,14 @@ Future<void> bookParkingSlotWithDetails(
 ) async {
   final userId = _supabaseClient.auth.currentUser!.id;
   
-  await _supabaseClient.rpc('book_parking_slot', params: {
-    'user_id': userId,
-    'place_id': placeId,
-    'slot_id': slotId,
-    'booking_time': DateTime.now().toUtc().toIso8601String(),
-    'duration_hours': durationHours,
-    'vehicle_number': vehicleNumber
-  });
+
+  await _supabaseClient.from('bookings_history').insert({
+        'user_id': userId,
+        'parking_place_id': placeId,
+        'name': placeId,
+        'address': placeId,
+        'booking_time': DateTime.now().toUtc().toIso8601String(),
+      });
 }
 
 Future<Map<String, dynamic>> getDashboardStats() async {
@@ -97,6 +98,17 @@ Future<Map<String, dynamic>> getDashboardStats() async {
     print('Error fetching dashboard stats: $e');
     return {};
   }
+}
+
+Future<List<BookingHistory>> getBookingHistory() async {
+  final response = await _supabaseClient
+      .from('bookings_history')
+      .select()
+      .order('booking_time', ascending: false);
+
+  return (response as List)
+      .map((booking) => BookingHistory.fromJson(booking))
+      .toList();
 }
 
 // Add these methods to your existing SupabaseService class

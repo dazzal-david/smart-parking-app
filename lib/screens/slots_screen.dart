@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:smart_parking_app/models/parking_place.dart';
 import 'package:smart_parking_app/models/parking_slot.dart';
 import 'package:smart_parking_app/services/supabase_service.dart';
+import 'package:smart_parking_app/screens/qr_scanner_screen.dart';
+
 
 class SlotsScreen extends StatefulWidget {
   final ParkingPlace place;
@@ -55,25 +57,41 @@ class _SlotsScreenState extends State<SlotsScreen> {
     }
   }
 
-  Future<void> _bookSlot() async {
-    final vehicleNumber = _isManualEntry 
-        ? _vehicleNumberController.text 
-        : _vehicleNumberController.text.split(' - ')[0];
+// Update the _bookSlot method in _SlotsScreenState
+Future<void> _bookSlot() async {
+  final vehicleNumber = _isManualEntry 
+      ? _vehicleNumberController.text 
+      : _vehicleNumberController.text.split(' - ')[0];
 
-    if (_selectedSlotId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a slot first')),
-      );
-      return;
-    }
+  if (_selectedSlotId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please select a slot first')),
+    );
+    return;
+  }
 
-    if (vehicleNumber.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select or enter a vehicle number')),
-      );
-      return;
-    }
+  if (vehicleNumber.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please select or enter a vehicle number')),
+    );
+    return;
+  }
 
+  // Get the selected slot
+  final selectedSlot = _slots.firstWhere((slot) => slot.id == _selectedSlotId);
+
+  // Show QR Scanner
+  final bool? qrResult = await Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => QRScannerScreen(
+        slotNumber: selectedSlot.slotNumber,
+        qrCode: selectedSlot.qrCode,
+      ),
+    ),
+  );
+
+  // If QR scan was successful, proceed with booking
+  if (qrResult == true) {
     setState(() => _isLoading = true);
 
     try {
@@ -92,6 +110,7 @@ class _SlotsScreenState extends State<SlotsScreen> {
       setState(() => _isLoading = false);
     }
   }
+}
 
   Widget _buildVehicleSelection() {
     return Column(
