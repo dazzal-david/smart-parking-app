@@ -39,6 +39,129 @@ class _BookingsScreenState extends State<BookingsScreen> {
     }
   }
 
+  Future<void> _extendBooking(Map<String, dynamic> booking) async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    int? additionalHours;
+
+    // Show dialog to select additional hours
+    await showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Extend Booking',
+          style: TextStyle(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'How many hours would you like to extend?',
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceVariant,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Current Booking Details:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${booking['place_name'] ?? 'Unknown Location'}\nSlot ${booking['slot_number'] ?? 'Unknown'}',
+                    style: TextStyle(color: colorScheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [1, 2, 3, 4].map((hours) => 
+                ElevatedButton(
+                  onPressed: () {
+                    additionalHours = hours;
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primaryContainer,
+                    foregroundColor: colorScheme.onPrimaryContainer,
+                  ),
+                  child: Text('$hours hr'),
+                ),
+              ).toList(),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: colorScheme.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // If user selected additional hours, proceed with extension
+    if (additionalHours != null) {
+      try {
+        setState(() => _isLoading = true);
+        
+        await _supabaseService.extendBooking(
+          booking['booking_id'].toString(),
+          additionalHours!,
+        );
+        
+        await _loadBookings();
+        
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Text('Booking extended by $additionalHours hours'),
+              ],
+            ),
+            backgroundColor: Colors.green.shade600,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error extending booking: ${e.toString()}'),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    }
+  }
+
   Future<void> _deregisterBooking(Map<String, dynamic> booking) async {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -443,9 +566,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     OutlinedButton.icon(
-                      onPressed: () {
-                        // Add extend booking functionality here
-                      },
+                      onPressed: () => _extendBooking(booking),
                       icon: const Icon(Icons.update, size: 18),
                       label: const Text('Extend'),
                       style: OutlinedButton.styleFrom(

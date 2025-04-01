@@ -203,6 +203,20 @@ Future<List<Map<String, dynamic>>> getActiveBookings() async {
     throw Exception('Failed to deregister parking: ${e.toString()}');
   }
 }
+
+  Future<void> extendBooking(String bookingId, int additionalHours) async {
+    try {
+      await _supabaseClient.rpc('extend_booking', params: {
+        'booking_id': bookingId,
+        'additional_hours': additionalHours,
+      });
+    } catch (e) {
+      print('Error extending booking: $e');
+      throw Exception('Failed to extend booking: ${e.toString()}');
+    }
+  }
+
+
   Future<Map<String, dynamic>> getUserProfile() async {
   try {
     final response = await _supabaseClient
